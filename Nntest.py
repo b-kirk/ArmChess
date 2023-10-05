@@ -64,19 +64,18 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(3 , 6, 5) # 3 Input channels, 6 output channels, 5x5 convolution square
         self.pool = nn.MaxPool2d(2, 2) # A pool of the maximum values of each convolution (2x2 values), moving to the next two columns (stride undefined, uses kernel size) and repeating, thus halving the number of values.
         self.conv2 = nn.Conv2d(6, 16, 5) # 6 Input channels, 16 output channels, 5x5 convolution square again.
-        self.fc1 = nn.Linear(16*5*5,120) # Takes in_features (size of input sample) , out_features (size of output sample), & generates linear.weight equal to a parameter
+        self.fc1 = nn.Linear(16*5*5,120) # Takes in_features (size of input sample) , out_features (size of output sample), & generates linear.weight equal to an empty parameter tensor of size in_features*out_features
         self.fc2 = nn.Linear(120, 84) # Linear Map
         self.fc3 = nn.Linear(84, 10) # Linear Map
 
-    def forward(self, x): # Init forward function
-        x = self.pool(F.relu(self.conv1(x))) 
+    def forward(self, x): # Init forward prop
+        x = self.pool(F.relu(self.conv1(x))) # Applies MaxPool2d to 
         x = self.pool(F.relu(self.conv2(x)))
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-
 
 net = Net()
 
