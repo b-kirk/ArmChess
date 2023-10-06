@@ -54,7 +54,7 @@ showImage(torchvision.utils.make_grid(images))
 print(''.join(f'{items[labels[j]]:5s}' for j in range(batchSize)))
 
 # Convolutional Neural Network 
-
+'''
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -107,3 +107,4 @@ for epoch in range(2):  # loop over the dataset multiple times
             running_loss = 0.0
 
 print('Finished Training')
+'''
