@@ -2,7 +2,7 @@ import numpy as np
 import torch 
 import torchvision
 import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import torch.utils.data
 
 '''
@@ -69,8 +69,8 @@ class Net(nn.Module):
         self.fc3 = nn.Linear(84, 10) # Linear Map
 
     def forward(self, x): # Init forward prop
-        x = self.pool(F.relu(self.conv1(x))) # Applies MaxPool2d to 
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv1(x))) # Applies MaxPool2d to a rectified linear value of the convolution 
+        x = self.pool(F.relu(self.conv2(x))) # Applies a second convolution 
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
@@ -79,15 +79,19 @@ class Net(nn.Module):
 
 net = Net()
 
+# Loss Function, optimizer
+
 import torch.optim as optim
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
+# Training
+
 for epoch in range(2):  # loop over the dataset multiple times
 
     running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
+    for i, data in enumerate(Loader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
 
