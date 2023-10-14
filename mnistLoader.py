@@ -3,7 +3,7 @@ import gzip
 import pickle 
 
 def loadData():
-    f = gzip.open('C:\Users\degeo\Downloads\ArmChess\data\mnist.pkl.gz', 'rb')
+    f = gzip.open('C:/Users/degeo/Downloads/ArmChess/data/mnist.pkl.gz', 'rb')
     trainData, validData, testData = pickle.load(f)
     f.close()
     return (trainData, validData, testData)
