@@ -1,5 +1,6 @@
 import numpy as np
 import random
+
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z)) # 1.0 Used to specify float
 def sigmoidPrime(z):
@@ -72,7 +73,7 @@ class QuadraticCost():
     def fn(a, y):
         return 0.5*np.linalg.norm(a-y)**2
     def delta(z, a, y):
-        return (a-y)*sigmoid_prime(z)
+        return (a-y)*sigmoidPrime(z)
 class net2():
     def __init__(self, neuronAmount, cost=crossEntropyCost):
         self.numLayers = len(neuronAmount)
@@ -88,10 +89,10 @@ class net2():
     def feedForward(self, a):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w,a)+b)
-            return a
+        return a
     def SGD(self, trainData, epochs, miniBatchSize, eta, lmbda = 0.0, evalData = None, monitorEvalCost=False, monitorEvalAcc=False, monitorTrainCost=False, monitorTrainAcc=False):
         if evalData: evalDataLength = len(evalData)
-            trainDataLength = len(trainData)
+        trainDataLength = len(trainData)
         evalCost, evalAcc = [], []
         trainCost, trainAcc = [], []
         for j in range(epochs):
@@ -116,7 +117,6 @@ class net2():
                 accuracy = self.accuracy(evalData)
                 evalAccuracy.append(accuracy)
                 print("Accuracy on evaluation data: {} / {}".format(accuracy, evalDataLength))
-            print
         return evalCost, evalAccuracy, trainCost, trainAccuracy
     def updateMiniBatch(self, miniBatch, eta, lmbda, n):
         delB = [np.zeros(b.shape) for b in self.biases]
@@ -140,6 +140,20 @@ class net2():
             activation = sigmoid(z)
             activations.append(activation)
         # Backpass
-            
-    
-        
+        delta = (self.cost).delta(zs[-1], activations[-1],y)
+        delB[-1] = delta
+        delW[-1] = np.dot(delta, activations[-1], y)
+        for l in range (2, self.numLayers):
+            z = zs[-l]
+            sp = sigmoidPrime(z)
+            delta = np.dot(self.weights[-l+1].transpose(), delta)*sp
+            delB[-l] = delta
+            delW[-l] = np.dot(delta, activations[-l-1].transpose())
+        return (delB, delW)
+    def accuracy(self, data, convert=False):
+        if convert: 
+            results = [(np.argmax(self.feedForward(x)), np.argmax(y)) for x,y in data]
+        else:
+            results = [(np.argmax(self.feedForward(x)), y) for x, y in data]
+        return sum(int(x==y) for x,y in results) 
+
