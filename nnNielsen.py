@@ -1,5 +1,7 @@
+import json
 import numpy as np
 import random
+import sys
 
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z)) # 1.0 Used to specify float
@@ -61,7 +63,7 @@ class net1():
         return (delB, delW)
     def costDerivative(self, outputActivations, y):
         return (outputActivations-y)
-class CrossEntropyCost():
+class crossEntropyCost():
     @staticmethod
     def fn(a ,y):
         return np.sum(np.nan_to_num(-y*np.log(a)-(1-y)*np.log(1-a)))
@@ -107,7 +109,7 @@ class net2():
                 print("Cost on training data: {}".format(cost))
             if monitorTrainAcc:
                 accuracy = self.accuracy(trainData, convert=True)
-                trainAccuracy.append(accuracy)
+                trainAcc.append(accuracy)
                 print("Accuracy on training data: {}/{}".format(accuracy, trainDataLength))
             if monitorEvalCost:
                 cost = self.totalCost(evalData, lmbda, convert=True)
@@ -115,9 +117,9 @@ class net2():
                 print("Cost on evaluaton data: {}".format(cost))
             if monitorEvalAcc:
                 accuracy = self.accuracy(evalData)
-                evalAccuracy.append(accuracy)
+                evalAcc.append(accuracy)
                 print("Accuracy on evaluation data: {} / {}".format(accuracy, evalDataLength))
-        return evalCost, evalAccuracy, trainCost, trainAccuracy
+        return evalCost, evalAcc, trainCost, trainAcc
     def updateMiniBatch(self, miniBatch, eta, lmbda, n):
         delB = [np.zeros(b.shape) for b in self.biases]
         delW = [np.zeros(w.shape) for w in self.weights]
@@ -156,4 +158,33 @@ class net2():
         else:
             results = [(np.argmax(self.feedForward(x)), y) for x, y in data]
         return sum(int(x==y) for x,y in results) 
+    def totalCost(self, data, lmbda, convert=False):
+        cost = 0.0
+        for x,y in data: 
+            a = self.feedForward(x)
+            if convert: y= vectResult(y)
+            cost += self.cost.fn(a, y)/len(data)
+        cost += 0.5*(lmbda/len(data))*sum(np.linalg.norm(w)**2 for w in self.weights)
+        return cost
+    def save(self, filename):
+        data = {"sizes": self.neuronAmount,
+                "weights": [w.tolist() for w in self.weights],
+                "biases": [b.tolist() for b in self.biases],
+                "cost": str(self.cost.__name__)}
+        f = open(filename, "w")
+        json.dump(data,f)
+        f.close()
 
+def load(filename):
+    f = open(filename, "r")
+    data = json.load(f)
+    f.close()
+    cost = getattr(sys.modules[__name__], data["cost"])
+    net = net2(data["neuronAmount"],cost=cost)
+    net.weights = [np.array(w) for w in data["weights"]]
+    net.biases = [np.array(b) for b in data["biases"]]
+    return net 
+def vectResult(j):
+    e = np.zeros((10,1))
+    e[j] = 1.0
+    return e
