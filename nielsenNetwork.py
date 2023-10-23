@@ -5,8 +5,10 @@ import sys
 
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z)) # 1.0 Used to specify float
+
 def sigmoidPrime(z):
     return sigmoid(z)*(1-sigmoid(z))
+
 class net1():
     def __init__(self, neuronAmount):
         self.numLayers = len(neuronAmount)
@@ -16,7 +18,7 @@ class net1():
     def feedForward(self, a):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w,a)+b)
-            return a
+        return a
     def SGD(self, trainData, epochs, miniBatchSize , eta, testData = None):
         if testData: testDataLength = len(testData)
         n = len(trainData)
@@ -61,8 +63,12 @@ class net1():
             delB[-l] = delta
             delW[-l] = np.dot(delta, activations[-l-1])
         return (delB, delW)
+    def evaluate(self, testData):
+        test_results = [(np.argmax(self.feedForward(x)), y) for (x, y) in testData]
+        return sum(int(x == y) for (x, y) in test_results)
     def costDerivative(self, outputActivations, y):
         return (outputActivations-y)
+    
 class crossEntropyCost():
     @staticmethod
     def fn(a ,y):
@@ -70,20 +76,23 @@ class crossEntropyCost():
     @staticmethod
     def delta(z, a, y):
         return (a-y)
+    
 class QuadraticCost():
     @staticmethod
     def fn(a, y):
         return 0.5*np.linalg.norm(a-y)**2
+    @staticmethod
     def delta(z, a, y):
         return (a-y)*sigmoidPrime(z)
+    
 class net2():
-    def __init__(self, neuronAmount, cost=crossEntropyCost):
+    def __init__(self, neuronAmount, cost=crossEntropyCost): # neuronAmount dictates neurons in each layer as an array [ input, hidden, hidden, ... , output]
         self.numLayers = len(neuronAmount)
         self.neuronAmount = neuronAmount
         self.defaultWeights()
         self.cost = cost
     def defaultWeights(self):
-        self.biases = [np.random.randn(y, 1) for y in self.neuronAmount[1:]] 
+        self.biases = [np.random.randn(y, 1) for y in self.neuronAmount[1:]] # Sets a 1d array of random biases length the size of the individual layer, for each layer in the network
         self.weights = [np.random.randn(y, x)/np.sqrt(x) for x, y in zip(self.neuronAmount[:-1], self.neuronAmount[1:])]
     def largeWeights(self):
         self.biases = [np.random.randn(y, 1) for y in self.neuronAmount[1:]] 
@@ -93,13 +102,16 @@ class net2():
             a = sigmoid(np.dot(w,a)+b)
         return a
     def SGD(self, trainData, epochs, miniBatchSize, eta, lmbda = 0.0, evalData = None, monitorEvalCost=False, monitorEvalAcc=False, monitorTrainCost=False, monitorTrainAcc=False):
-        if evalData: evalDataLength = len(evalData)
+        trainData = list(trainData) # PY 3.X Compatibility
+        if evalData: 
+            evalData = list(evalData) # PY 3.X Compatibility
+            evalDataLength = len(evalData)
         trainDataLength = len(trainData)
         evalCost, evalAcc = [], []
         trainCost, trainAcc = [], []
         for j in range(epochs):
-            random.shuffle(trainData)
-            miniBatches = [trainData[k:k+miniBatchSize] for k in range(0, trainDataLength, miniBatchSize)]
+            random.shuffle(trainData) # Shuffles tuples of (activation array first layer, actual value array last layer)
+            miniBatches = [trainData[k:k+miniBatchSize] for k in range(0, trainDataLength, miniBatchSize)] # k in range of trainDataLength, steps miniBatchSize: seperates into (trainDataLength/miniBatchSize) miniBatches of randomized tuples, storing each batch as an element in miniBatches
             for miniBatch in miniBatches:
                 self.updateMiniBatch(miniBatch, eta, lmbda, len(trainData))
             print("Epoch %s training complete" %j )
@@ -144,7 +156,7 @@ class net2():
         # Backpass
         delta = (self.cost).delta(zs[-1], activations[-1],y)
         delB[-1] = delta
-        delW[-1] = np.dot(delta, activations[-1], y)
+        delW[-1] = np.dot(delta, activations[-2].transpose())
         for l in range (2, self.numLayers):
             z = zs[-l]
             sp = sigmoidPrime(z)
