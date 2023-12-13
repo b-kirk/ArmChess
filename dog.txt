@@ -70,4 +70,6 @@ In MuZero these are replaced by single implicit model learned by a neural networ
 1.) State transitions: AlphaZero had access to a 'perfect simulator of the true dynamics process'. MuZero employs a learned dynamics model within its search. In this model each node in the tree is represented by a corresponding hidden state: by providing hidden state sk-1
 and action ak the search algorithm can transition to a new node sk = g(sk-1, ak).
 
+NOT FINISHED 
 
+PSEUDOCODE DESCRIPTION OF MUZERO IS GIVEN.
